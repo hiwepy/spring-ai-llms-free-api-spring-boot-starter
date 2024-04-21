@@ -11,7 +11,8 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.llmsfreeapi.api.LLMsFreeApi;
 import org.springframework.ai.llmsfreeapi.api.LLMsFreeApiChatOptions;
-import org.springframework.ai.llmsfreeapi.util.ApiUtils;
+import org.springframework.ai.llmsfreeapi.chat.messages.DocumentChatMessage;
+import org.springframework.ai.llmsfreeapi.chat.messages.ImageChatMessage;
 import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.model.function.AbstractFunctionCallSupport;
 import org.springframework.ai.model.function.FunctionCallbackContext;
@@ -35,7 +36,7 @@ public class LLMsFreeApiChatClient
      */
     private LLMsFreeApiChatOptions defaultOptions;
     /**
-     * Low-level 智普 API library.
+     * Low-level LLMs Free API library.
      */
     private final LLMsFreeApi llmsFreeApi;
     private final RetryTemplate retryTemplate;
@@ -43,10 +44,6 @@ public class LLMsFreeApiChatClient
     public LLMsFreeApiChatClient(LLMsFreeApi llmsFreeApi) {
         this(llmsFreeApi, LLMsFreeApiChatOptions.builder()
                         .withModel(LLMsFreeApi.ChatModel.KIMI.getValue())
-                        .withMaxToken(ApiUtils.DEFAULT_MAX_TOKENS)
-                        .withDoSample(Boolean.TRUE)
-                        .withTemperature(ApiUtils.DEFAULT_TEMPERATURE)
-                        .withTopP(ApiUtils.DEFAULT_TOP_P)
                         .build());
     }
 
@@ -83,7 +80,7 @@ public class LLMsFreeApiChatClient
 
             List<Generation> generations = chatCompletion.choices()
                     .stream()
-                    .map(choice -> new Generation(choice.message().content(), toMap(chatCompletion.id(), choice))
+                    .map(choice -> new Generation(Objects.toString(choice.message().content()), toMap(chatCompletion.id(), choice))
                             .withGenerationMetadata(ChatGenerationMetadata.from(choice.finishReason().name(), null)))
                     .toList();
 
@@ -130,7 +127,7 @@ public class LLMsFreeApiChatClient
                         roleMap.putIfAbsent(id, choice.message().role().name());
                     }
                     String finish = (choice.finishReason() != null ? choice.finishReason().name() : "");
-                    var generation = new Generation(choice.message().content(),
+                    var generation = new Generation(Objects.toString(choice.message().content()),
                             Map.of("id", id, "role", roleMap.get(id), "finishReason", finish));
                     if (choice.finishReason() != null) {
                         generation = generation
@@ -149,7 +146,7 @@ public class LLMsFreeApiChatClient
                 .map(cc -> new LLMsFreeApi.ChatCompletion.Choice(cc.index(), cc.delta(), cc.finishReason()))
                 .toList();
 
-        return new LLMsFreeApi.ChatCompletion(chunk.id(), "chat.completion", chunk.created(), chunk.model(), choices, chunk.requestId(),null);
+        return new LLMsFreeApi.ChatCompletion(chunk.id(), "chat.completion", chunk.created(), chunk.model(), choices, null);
     }
 
     /**
@@ -157,19 +154,44 @@ public class LLMsFreeApiChatClient
      */
     LLMsFreeApi.ChatCompletionRequest createRequest(Prompt prompt, boolean stream) {
 
+
         Set<String> functionsForThisRequest = new HashSet<>();
 
         var chatCompletionMessages = prompt.getInstructions()
                 .stream()
-                .map(m -> new LLMsFreeApi.ChatCompletionMessage(m.getContent(),
-                        LLMsFreeApi.ChatCompletionMessage.Role.valueOf(m.getMessageType().name())))
+                .map(m -> {
+                    // 消息类型为文档消息时，将其转换为 LLMsFreeApi.ChatCompletionMessage.DocumentContent 数组
+                    if (m instanceof DocumentChatMessage documentChatMessage) {
+                        // Convert DocumentChatMessage to LLMsFreeApi.ChatCompletionMessage.DocumentContent Array
+                        List<LLMsFreeApi.ChatCompletionMessage.DocumentContent> contents = Arrays.asList(
+                                new LLMsFreeApi.ChatCompletionMessage.DocumentContent("file",
+                                        new LLMsFreeApi.ChatCompletionMessage.DocumentFile(documentChatMessage.getFileUrl())),
+                                new LLMsFreeApi.ChatCompletionMessage.DocumentContent("text", documentChatMessage.getContent()));
+                        // Return the LLMsFreeApi.ChatCompletionMessage with the DocumentContent Array
+                        return new LLMsFreeApi.ChatCompletionMessage(contents,
+                                LLMsFreeApi.ChatCompletionMessage.Role.valueOf(m.getMessageType().name()));
+                    }
+                    // 消息类型为图片消息时，将其转换为 LLMsFreeApi.ChatCompletionMessage.ImageContent 数组
+                    if (m instanceof ImageChatMessage imageChatMessage) {
+                        // Convert DocumentChatMessage to LLMsFreeApi.ChatCompletionMessage.DocumentContent Array
+                        List<LLMsFreeApi.ChatCompletionMessage.ImageContent> contents = Arrays.asList(
+                                new LLMsFreeApi.ChatCompletionMessage.ImageContent("image_url",
+                                        new LLMsFreeApi.ChatCompletionMessage.ImageFile(imageChatMessage.getFileUrl())),
+                                new LLMsFreeApi.ChatCompletionMessage.ImageContent("text", imageChatMessage.getContent()));
+                        // Return the LLMsFreeApi.ChatCompletionMessage with the DocumentContent Array
+                        return new LLMsFreeApi.ChatCompletionMessage(contents,
+                                LLMsFreeApi.ChatCompletionMessage.Role.valueOf(m.getMessageType().name()));
+                    }
+                    // 消息类型为普通消息时，将其转换为 LLMsFreeApi.ChatCompletionMessage
+                    return new LLMsFreeApi.ChatCompletionMessage(m.getContent(),
+                            LLMsFreeApi.ChatCompletionMessage.Role.valueOf(m.getMessageType().name()));
+                })
                 .toList();
 
         var request = new LLMsFreeApi.ChatCompletionRequest(null, chatCompletionMessages, stream);
 
         if (this.defaultOptions != null) {
-            Set<String> defaultEnabledFunctions = this.handleFunctionCallbackConfigurations(this.defaultOptions,
-                    !IS_RUNTIME_CALL);
+            Set<String> defaultEnabledFunctions = this.handleFunctionCallbackConfigurations(this.defaultOptions, !IS_RUNTIME_CALL);
 
             functionsForThisRequest.addAll(defaultEnabledFunctions);
 
@@ -178,15 +200,12 @@ public class LLMsFreeApiChatClient
 
         if (prompt.getOptions() != null) {
             if (prompt.getOptions() instanceof ChatOptions runtimeOptions) {
-                var updatedRuntimeOptions = ModelOptionsUtils.copyToTarget(runtimeOptions, ChatOptions.class,
-                        LLMsFreeApiChatOptions.class);
+                var updatedRuntimeOptions = ModelOptionsUtils.copyToTarget(runtimeOptions, ChatOptions.class, LLMsFreeApiChatOptions.class);
 
-                Set<String> promptEnabledFunctions = this.handleFunctionCallbackConfigurations(updatedRuntimeOptions,
-                        IS_RUNTIME_CALL);
+                Set<String> promptEnabledFunctions = this.handleFunctionCallbackConfigurations(updatedRuntimeOptions, IS_RUNTIME_CALL);
                 functionsForThisRequest.addAll(promptEnabledFunctions);
 
-                request = ModelOptionsUtils.merge(updatedRuntimeOptions, request,
-                        LLMsFreeApi.ChatCompletionRequest.class);
+                request = ModelOptionsUtils.merge(updatedRuntimeOptions, request, LLMsFreeApi.ChatCompletionRequest.class);
             }
             else {
                 throw new IllegalArgumentException("Prompt options are not of type ChatOptions: "
@@ -196,9 +215,7 @@ public class LLMsFreeApiChatClient
 
         // Add the enabled functions definitions to the request's tools parameter.
         if (!CollectionUtils.isEmpty(functionsForThisRequest)) {
-
-            request = ModelOptionsUtils.merge(
-                    LLMsFreeApiChatOptions.builder().withTools(this.getFunctionTools(functionsForThisRequest)).build(),
+            request = ModelOptionsUtils.merge(LLMsFreeApiChatOptions.builder().withTools(this.getFunctionTools(functionsForThisRequest)).build(),
                     request, LLMsFreeApi.ChatCompletionRequest.class);
         }
 
@@ -241,7 +258,7 @@ public class LLMsFreeApiChatClient
 
         // Recursively call chatCompletionWithTools until the model doesn't call a
         // functions anymore.
-        LLMsFreeApi.ChatCompletionRequest newRequest = new LLMsFreeApi.ChatCompletionRequest(previousRequest.requestId(), conversationHistory, false);
+        LLMsFreeApi.ChatCompletionRequest newRequest = new LLMsFreeApi.ChatCompletionRequest(null, conversationHistory, false);
         newRequest = ModelOptionsUtils.merge(newRequest, previousRequest, LLMsFreeApi.ChatCompletionRequest.class);
 
         return newRequest;
@@ -260,7 +277,7 @@ public class LLMsFreeApiChatClient
 
     @Override
     protected ResponseEntity<LLMsFreeApi.ChatCompletion> doChatCompletion(LLMsFreeApi.ChatCompletionRequest request) {
-        return this.LLMsFreeApi.chatCompletionEntity(request);
+        return this.llmsFreeApi.chatCompletionEntity(request);
     }
 
     @Override

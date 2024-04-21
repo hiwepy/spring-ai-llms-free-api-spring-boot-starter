@@ -8,7 +8,7 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
 import static org.springframework.ai.aot.AiRuntimeHints.findJsonAnnotatedClassesInPackage;
 
-public class LLMsFreeApiiRuntimeHints implements RuntimeHintsRegistrar {
+public class LLMsFreeApiRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {

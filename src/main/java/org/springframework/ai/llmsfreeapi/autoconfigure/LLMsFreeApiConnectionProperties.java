@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(LLMsFreeApiConnectionProperties.CONFIG_PREFIX)
 public class LLMsFreeApiConnectionProperties {
 
-    public static final String CONFIG_PREFIX = "spring.ai.zhipuai";
+    public static final String CONFIG_PREFIX = "spring.ai.llmsfreeapi";
 
     /**
      * Base URL where 智普AI API server is running.

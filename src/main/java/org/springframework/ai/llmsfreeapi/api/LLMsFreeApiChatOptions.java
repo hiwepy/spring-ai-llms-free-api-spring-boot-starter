@@ -20,42 +20,6 @@ import java.util.stream.Collectors;
 public class LLMsFreeApiChatOptions implements FunctionCallingOptions, ChatOptions {
 
     /**
-     * 模型输出最大 tokens，最大输出为8192，默认值为1024
-     */
-    @JsonProperty("max_tokens")
-    private Integer maxTokens;
-    /**
-     * do_sample 为 true 时启用采样策略，do_sample 为 false 时采样策略 temperature、top_p 将不生效。默认值为 true。
-     */
-    @JsonProperty("do_sample")
-    private Boolean doSample;
-    /**
-     * 采样温度，控制输出的随机性，必须为正数
-     * 取值范围是：(0.0, 1.0)，不能等于 0，默认值为 0.95，值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定
-     * 建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
-     */
-    @JsonProperty("temperature")
-    private Float temperature;
-    /**
-     * 用温度取样的另一种方法，称为核取样取值范围是：(0.0, 1.0) 开区间，不能等于 0 或 1，默认值为 0.7
-     * 模型考虑具有 top_p 概率质量 tokens 的结果
-     * 例如：0.1 意味着模型解码器只考虑从前 10% 的概率的候选集中取 tokens
-     * 建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
-     */
-    @JsonProperty("top_p")
-    private Float topP;
-    /**
-     * 终端用户的唯一ID，协助平台对终端用户的违规行为、生成违法及不良信息或其他滥用行为进行干预。ID长度要求：最少6个字符，最多128个字符。
-     */
-    @JsonProperty(value = "user_id")
-    private String user;
-    /**
-     * 模型在遇到stop所制定的字符时将停止生成，目前仅支持单个停止词，格式为["stop_word1"]
-     */
-    @JsonProperty("stop")
-    private List<String> stop;
-
-    /**
      * 所要调用的模型编码
      */
     @JsonProperty("model")
@@ -112,38 +76,13 @@ public class LLMsFreeApiChatOptions implements FunctionCallingOptions, ChatOptio
             return this;
         }
 
-        public Builder withMaxToken(Integer maxTokens) {
-            this.options.setMaxTokens(maxTokens);
-            return this;
-        }
-
-        public Builder withDoSample(Boolean doSample) {
-            this.options.setDoSample(doSample);
-            return this;
-        }
-
-        public Builder withTemperature(Float temperature) {
-            this.options.setTemperature(temperature);
-            return this;
-        }
-
-        public Builder withTopP(Float topP) {
-            this.options.setTopP(topP);
-            return this;
-        }
-
-        public Builder withUser(String user) {
-            this.options.setUser(user);
-            return this;
-        }
-
-        public Builder withStop(List<String> stop) {
-            this.options.setStop(stop)
+        public Builder withUseSearch(Boolean useSearch) {
+            this.options.setUseSearch(useSearch);
             return this;
         }
 
         public Builder withTools(List<LLMsFreeApi.FunctionTool> tools) {
-            this.options.setTools(tools)
+            this.options.setTools(tools);
             return this;
         }
 
@@ -158,54 +97,22 @@ public class LLMsFreeApiChatOptions implements FunctionCallingOptions, ChatOptio
 
     }
 
-    public Integer getMaxTokens() {
-        return maxTokens;
-    }
-
-    public void setMaxTokens(Integer maxTokens) {
-        this.maxTokens = maxTokens;
-    }
-
-    public Boolean getDoSample() {
-        return doSample;
-    }
-
-    public void setDoSample(Boolean doSample) {
-        this.doSample = doSample;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public List<String> getStop() {
-        return stop;
-    }
-
-    public void setStop(List<String> stop) {
-        this.stop = stop;
-    }
-
     @Override
     public Float getTemperature() {
-        return this.temperature;
+        throw new UnsupportedOperationException("Unimplemented method 'getTemperature'");
     }
 
     public void setTemperature(Float temperature) {
-        this.temperature = temperature;
+        throw new UnsupportedOperationException("Unimplemented method 'setTemperature'");
     }
 
     @Override
     public Float getTopP() {
-        return this.topP;
+        throw new UnsupportedOperationException("Unimplemented method 'getTopP'");
     }
 
     public void setTopP(Float topP) {
-        this.topP = topP;
+        throw new UnsupportedOperationException("Unimplemented method 'setTopP'");
     }
 
     @Override
@@ -225,6 +132,14 @@ public class LLMsFreeApiChatOptions implements FunctionCallingOptions, ChatOptio
 
     public String getModel() {
         return model;
+    }
+
+    public Boolean getUseSearch() {
+        return useSearch;
+    }
+
+    public void setUseSearch(Boolean useSearch) {
+        this.useSearch = useSearch;
     }
 
     public List<LLMsFreeApi.FunctionTool> getTools() {

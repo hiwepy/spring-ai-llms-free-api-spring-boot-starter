@@ -10,10 +10,10 @@ import java.util.Map;
 @RestController
 public class EmbeddingController {
 
-    private final ZhipuAiEmbeddingClient embeddingClient;
+    private final LLMsFreeApiEmbeddingClient embeddingClient;
 
     @Autowired
-    public EmbeddingController(ZhipuAiEmbeddingClient embeddingClient) {
+    public EmbeddingController(LLMsFreeApiEmbeddingClient embeddingClient) {
         this.embeddingClient = embeddingClient;
     }
 

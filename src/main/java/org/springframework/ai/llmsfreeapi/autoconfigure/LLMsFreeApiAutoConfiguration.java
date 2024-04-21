@@ -1,11 +1,10 @@
 package org.springframework.ai.llmsfreeapi.autoconfigure;
 
-import org.springframework.ai.autoconfigure.mistralai.MistralAiEmbeddingProperties;
 import org.springframework.ai.autoconfigure.retry.SpringAiRetryAutoConfiguration;
-import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackContext;
 import org.springframework.ai.llmsfreeapi.LLMsFreeApiChatClient;
 import org.springframework.ai.llmsfreeapi.api.LLMsFreeApi;
+import org.springframework.ai.model.function.FunctionCallback;
+import org.springframework.ai.model.function.FunctionCallbackContext;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,16 +25,16 @@ import java.util.List;
  * {@link AutoConfiguration Auto-configuration} for 智普AI Chat Client.
  */
 @AutoConfiguration(after = { RestClientAutoConfiguration.class, SpringAiRetryAutoConfiguration.class })
-@EnableConfigurationProperties({ LLMsFreeApiChatProperties.class, LLMsFreeApiConnectionProperties.class, ZhipuAiEmbeddingProperties.class })
+@EnableConfigurationProperties({ LLMsFreeApiChatProperties.class, LLMsFreeApiConnectionProperties.class })
 @ConditionalOnClass(LLMsFreeApi.class)
 public class LLMsFreeApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LLMsFreeApi zhipuAiApi(LLMsFreeApiConnectionProperties properties, RestClient.Builder restClientBuilder, ResponseErrorHandler responseErrorHandler) {
+    public LLMsFreeApi llmsFreeApi(LLMsFreeApiConnectionProperties properties, RestClient.Builder restClientBuilder, ResponseErrorHandler responseErrorHandler) {
 
-        Assert.hasText(properties.getApiKey(), "ZhipuAI API key must be set");
-        Assert.hasText(properties.getBaseUrl(), "ZhipuAI base URL must be set");
+        Assert.hasText(properties.getApiKey(), "LLMs Free API key must be set");
+        Assert.hasText(properties.getBaseUrl(), "LLMs Free API base URL must be set");
 
         return new LLMsFreeApi(properties.getBaseUrl(), properties.getApiKey(), restClientBuilder, responseErrorHandler);
     }
@@ -43,7 +42,7 @@ public class LLMsFreeApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = LLMsFreeApiChatProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
-    public LLMsFreeApiChatClient zhipuAiChatClient(LLMsFreeApi LLMsFreeApi,
+    public LLMsFreeApiChatClient llmsFreeApiChatClient(LLMsFreeApi llmsFreeApi,
                                                    LLMsFreeApiChatProperties chatProperties,
                                                    List<FunctionCallback> toolFunctionCallbacks,
                                                    FunctionCallbackContext functionCallbackContext,
@@ -51,17 +50,7 @@ public class LLMsFreeApiAutoConfiguration {
         if (!CollectionUtils.isEmpty(toolFunctionCallbacks)) {
             chatProperties.getOptions().getFunctionCallbacks().addAll(toolFunctionCallbacks);
         }
-        return new LLMsFreeApiChatClient(LLMsFreeApi, chatProperties.getOptions(), functionCallbackContext, retryTemplate);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = MistralAiEmbeddingProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
-    public ZhipuAiEmbeddingClient zhipuAiEmbeddingClient(LLMsFreeApi LLMsFreeApi,
-                                                         ZhipuAiEmbeddingProperties embeddingProperties,
-                                                         RetryTemplate retryTemplate) {
-
-        return new ZhipuAiEmbeddingClient(LLMsFreeApi, embeddingProperties.getMetadataMode(), embeddingProperties.getOptions(), retryTemplate);
+        return new LLMsFreeApiChatClient(llmsFreeApi, chatProperties.getOptions(), functionCallbackContext, retryTemplate);
     }
 
     @Bean

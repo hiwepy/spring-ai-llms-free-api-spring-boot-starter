@@ -71,7 +71,7 @@ public class LLMsFreeApiStreamFunctionCallingHelper {
     }
 
     private LLMsFreeApi.ChatCompletionMessage merge(LLMsFreeApi.ChatCompletionMessage previous, LLMsFreeApi.ChatCompletionMessage current) {
-        String content = (current.content() != null ? current.content()
+        Object content = (current.content() != null ? current.content()
                 : "" + ((previous.content() != null) ? previous.content() : ""));
         LLMsFreeApi.ChatCompletionMessage.Role role = (current.role() != null ? current.role() : previous.role());
         role = (role != null ? role : LLMsFreeApi.ChatCompletionMessage.Role.ASSISTANT); // default to ASSISTANT (if null
