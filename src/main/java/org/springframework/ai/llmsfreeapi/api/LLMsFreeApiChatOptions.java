@@ -98,19 +98,23 @@ public class LLMsFreeApiChatOptions implements FunctionCallingOptions, ChatOptio
     }
 
     @Override
+    @JsonIgnore
     public Float getTemperature() {
         throw new UnsupportedOperationException("Unimplemented method 'getTemperature'");
     }
 
+    @JsonIgnore
     public void setTemperature(Float temperature) {
         throw new UnsupportedOperationException("Unimplemented method 'setTemperature'");
     }
 
     @Override
+    @JsonIgnore
     public Float getTopP() {
         throw new UnsupportedOperationException("Unimplemented method 'getTopP'");
     }
 
+    @JsonIgnore
     public void setTopP(Float topP) {
         throw new UnsupportedOperationException("Unimplemented method 'setTopP'");
     }
