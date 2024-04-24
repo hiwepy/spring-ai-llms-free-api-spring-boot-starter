@@ -1,9 +1,5 @@
 # spring-ai-llms-free-api-spring-boot-starter
 
-Spring Boot Starter For Spring AI Implementation Base On LLMs Free API（LLM Red Team）
-
-### 说明
-
  > 基于 LLM Red Team 开源组织开发的 [LLMs Free API](https://github.com/orgs/LLM-Red-Team/repositories?q=free-api) 服务 和 Spring AI 的 Spring Boot Starter 实现
 
 ### LLM Red Team
@@ -25,7 +21,7 @@ Spring Boot Starter For Spring AI Implementation Base On LLMs Free API（LLM Red
 
 ``` xml
 <dependency>
-	<groupId>com.github.hiwepy</groupId>
+	<groupId>com.github.teachingai</groupId>
 	<artifactId>spring-ai-llms-free-api-spring-boot-starter</artifactId>
 	<version>${project.version}</version>
 </dependency>
@@ -33,22 +29,9 @@ Spring Boot Starter For Spring AI Implementation Base On LLMs Free API（LLM Red
 
 ### Sample
 
-```java
+使用示例请参见 [Spring AI Examples](https://github.com/TeachingAI/spring-ai-examples)
 
-import javax.sql.DataSource;
+### License
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-
-@SpringBootApplication
-public class Application {
-	
-	public static void main(String[] args) throws Exception {
-		SpringApplication.run(Application.class, args);
-	}
-
-}
-
-```
+[Apache License 2.0](LICENSE)
 
