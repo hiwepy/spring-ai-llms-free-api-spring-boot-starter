@@ -8,6 +8,8 @@
 
 该组织成立的愿景是通过各厂商大模型应用中已公开的信息挖掘潜在的安全问题并公开一些技术细节，如果影响到您应用的正常运营请联系组织负责人，我们会及时下线相关仓库。
 
+文档站点：https://llm-red-team.github.io/free-api/
+
 #### 以下是 LLM Red Team 已公开的仓库：
 
 - Moonshot AI（Kimi.ai）接口转API [kimi-free-api](https://github.com/LLM-Red-Team/kimi-free-api)
@@ -15,6 +17,9 @@
 - 阿里通义 (Qwen) 接口转API [qwen-free-api](https://github.com/LLM-Red-Team/qwen-free-api)
 - ZhipuAI (智谱清言) 接口转API [glm-free-api](https://github.com/LLM-Red-Team/glm-free-api)
 - 秘塔AI (metaso) 接口转API [metaso-free-api](https://github.com/LLM-Red-Team/metaso-free-api)
+- 讯飞星火（spark）接口转API [spark-free-api](https://github.com/LLM-Red-Team/hailuo-free-api)
+- MiniMax（海螺AI）接口转API [hailuo-free-api](https://github.com/LLM-Red-Team/deepseek-free-api)
+- 深度求索（DeepSeek）接口转API [deepseek-free-api](https://github.com/LLM-Red-Team/emohaa-free-api)
 - 聆心智能 (Emohaa) 接口转API [emohaa-free-api](https://github.com/LLM-Red-Team/emohaa-free-api)
 
 ### Maven
